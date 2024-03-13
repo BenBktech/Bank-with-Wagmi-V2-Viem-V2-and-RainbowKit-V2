@@ -1,7 +1,7 @@
 import RainbowKitAndChakraProvider from "./RainbowKitAndChakraProvider";
-import { Inter } from "next/font/google";
-
 import Layout from "@/components/Layout";
+
+import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
           <Layout>
             {children}
           </Layout>
-        </RainbowKitAndChakraProvider>    
+        </RainbowKitAndChakraProvider>
       </body>
     </html>
   );

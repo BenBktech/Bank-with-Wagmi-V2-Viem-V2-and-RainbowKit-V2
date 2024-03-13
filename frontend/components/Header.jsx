@@ -10,7 +10,7 @@ const Header = () => {
         p="2rem"
     >
         <Text>Logo</Text>
-        <ConnectButton />
+        <ConnectButton showBalance={false} />
     </Flex>
   )
 }

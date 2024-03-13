@@ -1,13 +1,17 @@
-'use client'
+'use client';
+import { useState, useEffect } from "react";
 
-import { useState } from "react"
+import { Heading, Flex, Button, Input, useToast } from "@chakra-ui/react";
+import {
+    Alert,
+    AlertIcon,
+} from '@chakra-ui/react'
 
-import { Heading, Flex, Button, Input, useToast } from "@chakra-ui/react"
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
-import { parseEther } from "viem"
+import { parseEther } from "viem";
 
-import { contractAddress, contractAbi } from "@/constants"
+import { contractAddress, contractAbi } from "@/constants";
 
 const Withdraw = ({ refetch, getEvents }) => {
 
@@ -20,14 +24,8 @@ const Withdraw = ({ refetch, getEvents }) => {
         mutation: {
             // Si ça a marché d'écrire dans le contrat
             onSuccess: () => {
-                //Faire quelque chose ici si succès, par exemple un refetch
-                // refetch();
-                // getEvents();
-                setWithdrawValue('');
-                refetch();
-                getEvents();
                 toast({
-                    title: "Le Withdraw a bien été réalisé.",
+                    title: "La transaction du withdraw a été lancée",
                     status: "success",
                     duration: 3000,
                     isClosable: true,
@@ -42,17 +40,27 @@ const Withdraw = ({ refetch, getEvents }) => {
                     isClosable: true,
                 });
             },
-        },
-    })
+        }
+    }) 
 
     const withdraw = async() => {
-        writeContract({ 
-            address: contractAddress, 
-            abi: contractAbi, 
-            functionName: 'withdraw',
-            args: [parseEther(withdrawValue)],
-            account: address, 
-        }) 
+        if(!isNaN(withdrawValue)) {
+            writeContract({
+                address: contractAddress,
+                abi: contractAbi,
+                functionName: 'withdraw',
+                args: [parseEther(withdrawValue)],
+                account: address
+            })
+        }
+        else {
+            toast({
+                title: "FAUT RENTRER UN NOMBRE :@ !!! (encore ?!)",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
     }
 
     const { isLoading: isConfirming, isSuccess: isConfirmed } = 
@@ -60,11 +68,32 @@ const Withdraw = ({ refetch, getEvents }) => {
       hash, 
     }) 
 
+    useEffect(() => {
+        if(isConfirmed) {
+            // refetch la balance
+            refetch()
+            // refetch les events
+            getEvents();
+            setWithdrawValue('');
+            toast({
+                title: "Le withdraw a bien été réalisé.",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    }, [isConfirmed])
+    
     return (
-        <>
-            <Heading as='h2' size='xl' mt='2rem'>
+       <>
+            <Heading as='h2' size='xl' mt='1rem'>
                 Withdraw
             </Heading>
+            {isConfirmed 
+            &&  <Alert mt="1rem" status='success'>
+                    <AlertIcon />
+                    Your transaction has been confirmed
+                </Alert>}
             <Flex 
                 justifyContent="space-between"
                 alignItems="center"
@@ -72,10 +101,10 @@ const Withdraw = ({ refetch, getEvents }) => {
                 mt="1rem"
             >
                 <Input placeholder='Amount in ETH' value={withdrawValue} onChange={(e) => setWithdrawValue(e.target.value)} />
-                <Button colorScheme='purple' onClick={withdraw}>{isPending ? 'Withdrawing...' : 'Withdraw'} </Button>
+                <Button colorScheme='purple' onClick={withdraw}>Withdraw</Button>
             </Flex>
-        </>
-  )
+       </> 
+    )
 }
 
 export default Withdraw
